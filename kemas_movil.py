@@ -44,6 +44,14 @@ from dateutil.parser import  *
 from openerp import SUPERUSER_ID
 _logger = logging.getLogger(__name__)
 
+class kemas_config(osv.osv): 
+    _columns = {
+        'mobile_background': fields.binary('Fondo', help='Es la imagen que estla como fndo en el menu de Colaboradores.'),
+        'mobile_background_text_color':fields.char('Color de la letra', size=64, help='Color del texto del Menu.'),
+        }
+    
+    _inherit = 'kemas.config' 
+    
 class kemas_attendance(osv.osv): 
     def get_attendances_to_mobilapp(self, cr, uid, ids, context={}):
         sql = """
