@@ -79,7 +79,7 @@ class kemas_collaborator(osv.osv):
                 
         sql = """
             SELECT 
-                Cl.id, CL.code,CL.name,Cl.nick_name,Cl.birth,Cl.marital_status,Cl.address,P.image_medium,
+                Cl.id, CL.code,CL.name,Cl.nick_name,Cl.birth,Cl.marital_status,Cl.address,Cl.photo_Large as image_medium,
                 Cl.mobile,Cl.telef1,Cl.telef2,Cl.email,Cl.im_account,
                 Cl.join_date,CL.points,LV.name as level, CL.team_id, Cl.genre
             FROM kemas_collaborator as CL
@@ -94,7 +94,7 @@ class kemas_collaborator(osv.osv):
             collaborator = collaborators[0]
             # Obtener el listado de Areas de Colaboracion
             sql = """
-                SELECT name,logo FROM kemas_area as A
+                SELECT name,logo_small as logo FROM kemas_area as A
                 JOIN kemas_collaborator_area_rel as REL ON (REL.area_id = A.id)
                 WHERE REL.collaborator_id = %s
                 """ % str(collaborator['id'])
@@ -106,7 +106,7 @@ class kemas_collaborator(osv.osv):
             # Obtener el equipo
             if collaborator['team_id']:
                 sql = """
-                    SELECT name,logo FROM kemas_team
+                    SELECT name,logo_medium as logo FROM kemas_team
                     WHERE id = %s
                     """ % str(collaborator['team_id'])
                 cr.execute(sql)
@@ -152,7 +152,7 @@ class kemas_collaborator(osv.osv):
             return result
         
         sql = """
-            SELECT P.name,P.image_small as image, CL.team_id
+            SELECT P.name,CL.photo_medium as image, CL.team_id
             FROM kemas_collaborator as CL
             JOIN res_users as U on (Cl.user_id = U.id)
             JOIN res_partner as P on (U.partner_id = P.id)
