@@ -79,7 +79,7 @@ class kemas_collaborator(osv.osv):
                 
         sql = """
             SELECT 
-                Cl.id, CL.code,CL.name,Cl.nick_name,Cl.birth,Cl.marital_status,Cl.address,Cl.photo_Large as image_medium,
+                Cl.id, Cl.personal_id, CL.code,CL.name,Cl.nick_name,Cl.birth,Cl.marital_status,Cl.address,Cl.photo_Large as image_medium,
                 Cl.mobile,Cl.telef1,Cl.telef2,Cl.email,Cl.im_account,
                 Cl.join_date,CL.points,LV.name as level, CL.team_id, Cl.genre
             FROM kemas_collaborator as CL
