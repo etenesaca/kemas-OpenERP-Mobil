@@ -52,6 +52,18 @@ class kemas_config(osv.osv):
     
     _inherit = 'kemas.config' 
     
+class kemas_history_points(osv.osv): 
+    def get_points_to_mobilapp(self, cr, uid, ids, context={}):
+        sql = """
+            SELECT H.points, H.type, H.date FROM kemas_history_points as H
+            WHERE H.id in %s
+            """ % (kemas_extras.convert_to_tuple_str(ids))
+        cr.execute(sql)
+        print ids
+        return cr.fetchall()
+
+    _inherit = 'kemas.history.points' 
+    
 class kemas_attendance(osv.osv): 
     def get_attendances_to_mobilapp(self, cr, uid, ids, context={}):
         sql = """
