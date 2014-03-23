@@ -57,6 +57,7 @@ class kemas_history_points(osv.osv):
         sql = """
             SELECT H.points, H.type, H.date FROM kemas_history_points as H
             WHERE H.id in %s
+            ORDER BY H.date DESC
             """ % (kemas_extras.convert_to_tuple_str(ids))
         cr.execute(sql)
         print ids
@@ -74,7 +75,6 @@ class kemas_attendance(osv.osv):
             ORDER BY A.date DESC
             """ % (kemas_extras.convert_to_tuple_str(ids))
         cr.execute(sql)
-        print ids
         return cr.fetchall()
 
     _inherit = 'kemas.attendance' 
