@@ -55,7 +55,7 @@ class kemas_config(osv.osv):
 class kemas_history_points(osv.osv): 
     def get_points_to_mobilapp(self, cr, uid, ids, context={}):
         sql = """
-            SELECT H.points, H.type, H.date FROM kemas_history_points as H
+            SELECT H.id, H.points, H.type, H.date FROM kemas_history_points as H
             WHERE H.id in %s
             ORDER BY H.date DESC
             """ % (kemas_extras.convert_to_tuple_str(ids))
