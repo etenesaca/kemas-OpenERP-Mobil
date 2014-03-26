@@ -106,24 +106,21 @@ class kemas_collaborator(osv.osv):
             collaborator = collaborators[0]
             # Obtener el listado de Areas de Colaboracion
             sql = """
-                SELECT name,logo_small as logo FROM kemas_area as A
+                SELECT id,name FROM kemas_area as A
                 JOIN kemas_collaborator_area_rel as REL ON (REL.area_id = A.id)
                 WHERE REL.collaborator_id = %s
                 """ % str(collaborator['id'])
             cr.execute(sql)
             collaborator['areas'] = cr.dictfetchall()
-            for area in collaborator['areas']:
-                area['logo'] = build_image(area['logo'])
             
             # Obtener el equipo
             if collaborator['team_id']:
                 sql = """
-                    SELECT name,logo_medium as logo FROM kemas_team
+                    SELECT id,name FROM kemas_team
                     WHERE id = %s
                     """ % str(collaborator['team_id'])
                 cr.execute(sql)
                 collaborator['team'] = cr.dictfetchall()[0]
-                collaborator['team']['logo'] = build_image(collaborator['team']['logo'])
             else:
                 collaborator['team'] = ''
             collaborator.pop('team_id')
@@ -150,6 +147,7 @@ class kemas_collaborator(osv.osv):
             for field in collaborator:
                 if collaborator[field] is None:
                     collaborator[field] = ' -- '
+                    
             return collaborator
         else:
             return False
