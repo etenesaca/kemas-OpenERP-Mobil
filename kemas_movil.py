@@ -18,30 +18,33 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from osv import fields, osv
-from lxml import etree
-from tools.translate import _
-from mx import DateTime
-from datetime import *
-from datetime import timedelta
-from datetime import datetime
-import time
-import datetime 
-from kemas import kemas_extras
-import addons
-import unicodedata
-import random
-import logging
-import calendar
-import pooler
-import threading
-from mx import DateTime
 import base64
-import openerp
-import tools
-import math
+import calendar
+from datetime import *
+from datetime import datetime
+from datetime import timedelta
+import datetime 
 from dateutil.parser import  *
+import logging
+from lxml import etree
+import math
+from mx import DateTime
+from mx import DateTime
+import random
+import threading
+import time
+import unicodedata
+
+import addons
+from kemas import kemas_extras
 from openerp import SUPERUSER_ID
+import openerp
+from osv import fields, osv
+import pooler
+import tools
+from tools.translate import _
+
+
 _logger = logging.getLogger(__name__)
 
 class kemas_config(osv.osv): 
@@ -53,27 +56,64 @@ class kemas_config(osv.osv):
     _inherit = 'kemas.config' 
     
 class kemas_history_points(osv.osv): 
-    def get_points_to_mobilapp(self, cr, uid, ids, context={}):
+    def get_count_points_to_mobilapp(self, cr, uid, search_args, context={}):
+        collaborator_id = search_args['collaborator_id']
+        points = ""
+        if search_args.get("type", False):
+            points = "and H.type = '" + str(search_args['type']) + "'"
+            
+        sql = """
+            SELECT count(H.id) FROM kemas_history_points as H
+            WHERE H.collaborator_id = %d %s
+            """ % (collaborator_id, points)
+        cr.execute(sql)
+        return cr.fetchall()[0][0]
+    
+    def get_points_to_mobilapp(self, cr, uid, search_args, offset, limit, context={}):
+        collaborator_id = search_args['collaborator_id']
+        points = ""
+        if search_args.get("type", False):
+            points = "and H.type = '" + str(search_args['type']) + "'"
+            
         sql = """
             SELECT H.id, H.points, H.type, H.date FROM kemas_history_points as H
-            WHERE H.id in %s
-            ORDER BY H.date DESC
-            """ % (kemas_extras.convert_to_tuple_str(ids))
+            WHERE H.collaborator_id = %d %s
+            ORDER BY H.date DESC, H.id DESC
+            OFFSET %d LIMIT %d
+            """ % (collaborator_id, points, offset, limit)
         cr.execute(sql)
-        print ids
         return cr.fetchall()
 
     _inherit = 'kemas.history.points' 
     
 class kemas_attendance(osv.osv): 
-    def get_attendances_to_mobilapp(self, cr, uid, ids, context={}):
+    def get_count_attendances_to_mobilapp(self, cr, uid, search_args, context={}):
+        collaborator_id = search_args['collaborator_id']
+        attendances = ""
+        if search_args.get("type", False):
+            attendances = "and A.type = '" + str(search_args['type']) + "'"
+        
+        sql = """
+            SELECT count(A.id) FROM kemas_attendance as A
+            WHERE A.collaborator_id = %d %s
+            """ % (collaborator_id, attendances)
+        cr.execute(sql)
+        return cr.fetchall()[0][0]
+    
+    def get_attendances_to_mobilapp(self, cr, uid, search_args, offset, limit, context={}):
+        collaborator_id = search_args['collaborator_id']
+        attendances = ""
+        if search_args.get("type", False):
+            attendances = "and A.type = '" + str(search_args['type']) + "'"
+        
         sql = """
             SELECT A.id, S.name, A.type, A.date FROM kemas_attendance as A
             JOIN kemas_event as E ON (E.id = A.event_id)
             JOIN kemas_service as S ON (S.id = E.service_id)
-            WHERE A.id in %s
-            ORDER BY A.date DESC
-            """ % (kemas_extras.convert_to_tuple_str(ids))
+            WHERE A.collaborator_id = %d %s
+            ORDER BY A.date DESC, A.id DESC
+            OFFSET %d LIMIT %d
+            """ % (collaborator_id, attendances, offset, limit)
         cr.execute(sql)
         return cr.fetchall()
 
