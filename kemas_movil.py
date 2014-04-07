@@ -55,6 +55,46 @@ class kemas_config(osv.osv):
     
     _inherit = 'kemas.config' 
     
+class kemas_event(osv.osv): 
+    def get_count_events_to_mobilapp(self, cr, uid, search_args, context={}):
+        collaborator_id = search_args['collaborator_id']
+        state = ""
+        if search_args.get("state", False):
+            state = "and E.state = '" + str(search_args['state']) + "'"
+            
+        sql = """
+            SELECT count(E.id) FROM kemas_event as E
+            JOIN kemas_service as S on (S.id = E.service_id)
+            WHERE E.id in (
+                select event_id from kemas_event_collaborator_line
+                where collaborator_id = %d %s
+            )
+            """ % (collaborator_id, state)
+        cr.execute(sql)
+        return cr.fetchall()[0][0]
+    
+    def get_events_to_mobilapp(self, cr, uid, search_args, offset, limit, context={}):
+        collaborator_id = search_args['collaborator_id']
+        state = ""
+        if search_args.get("state", False):
+            state = "and E.state = '" + str(search_args['state']) + "'"
+            
+        sql = """
+            SELECT E.id, S.name as service, E.state, E.date_start, E.date_stop FROM kemas_event as E
+            JOIN kemas_service as S on (S.id = E.service_id)
+            WHERE E.id in (
+                select event_id from kemas_event_collaborator_line
+                where collaborator_id = %d %s
+            )
+            ORDER BY E.date_start DESC, E.id DESC
+            OFFSET %d LIMIT %d
+            """ % (collaborator_id, state, offset, limit)
+        cr.execute(sql)
+        events = cr.fetchall()
+        return events
+
+    _inherit = 'kemas.event'
+    
 class kemas_history_points(osv.osv): 
     def get_count_points_to_mobilapp(self, cr, uid, search_args, context={}):
         collaborator_id = search_args['collaborator_id']
@@ -84,7 +124,7 @@ class kemas_history_points(osv.osv):
         cr.execute(sql)
         return cr.fetchall()
 
-    _inherit = 'kemas.history.points' 
+    _inherit = 'kemas.history.points'
     
 class kemas_attendance(osv.osv): 
     def get_count_attendances_to_mobilapp(self, cr, uid, search_args, context={}):
