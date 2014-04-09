@@ -73,11 +73,15 @@ class kemas_event(osv.osv):
         cr.execute(sql)
         return cr.fetchall()[0][0]
     
-    def get_events_to_mobilapp(self, cr, uid, search_args, offset, limit, context={}):
-        collaborator_id = search_args['collaborator_id']
+    def get_events_to_mobilapp(self, cr, uid, params, context={}):
+        offset = params.get('offset', 0)
+        limit = params.get('limit', 10)
+        limit_avatars = params.get('limit_avatars', 3)
+        
+        collaborator_id = params['collaborator_id']
         state = " and E.state in ('on_going', 'closed')"
-        if search_args.get("state", False):
-            state = "and E.state = '" + str(search_args['state']) + "'"
+        if params.get("state", False):
+            state = "and E.state = '" + str(params['state']) + "'"
             
         sql = """
             SELECT E.id, S.name as service, E.state, E.date_start, E.date_stop FROM kemas_event as E
@@ -92,14 +96,26 @@ class kemas_event(osv.osv):
         cr.execute(sql)
         
         result = []
+        
         for event in cr.fetchall():
             sql = """
-                select collaborator_id from kemas_event_collaborator_line
+                select count(id) from kemas_event_collaborator_line
                 where event_id = %d
                 """ % (event[0])
             cr.execute(sql)
-            collaborator_ids = kemas_extras.convert_result_query_to_list(cr.fetchall())
-            event = list(event) + [collaborator_ids] 
+            num_collaborators = cr.fetchall()[0][0]
+            
+            sql = """
+                select C.photo_very_small from kemas_event_collaborator_line as CL
+                join kemas_collaborator as C on (C.id = CL.collaborator_id)
+                where event_id = %d
+                limit %d
+            """ % (event[0], limit_avatars)
+            cr.execute(sql)
+            collaborators = []
+            for collaborator in cr.dictfetchall():
+                collaborators.append(unicode(collaborator['photo_very_small']))
+            event = list(event) + [num_collaborators] + [collaborators]
             result.append(event)
         return result
 
@@ -172,7 +188,7 @@ class kemas_attendance(osv.osv):
 class kemas_collaborator(osv.osv):
     def get_collaborator_event(self, cr, uid, collaborator_id, context={}):
         sql = """
-            SELECT P.name, C.photo_small FROM kemas_collaborator as C
+            SELECT P.name, C.photo_very_small as photo_small FROM kemas_collaborator as C
             JOIN res_users AS U ON (U.id = C.user_id)
             JOIN res_partner AS P ON (P.id = U.partner_id)
             WHERE C.id = %d
