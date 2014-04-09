@@ -58,7 +58,7 @@ class kemas_config(osv.osv):
 class kemas_event(osv.osv): 
     def get_count_events_to_mobilapp(self, cr, uid, search_args, context={}):
         collaborator_id = search_args['collaborator_id']
-        state = ""
+        state = " and E.state in ('on_going', 'closed')"
         if search_args.get("state", False):
             state = "and E.state = '" + str(search_args['state']) + "'"
             
@@ -75,7 +75,7 @@ class kemas_event(osv.osv):
     
     def get_events_to_mobilapp(self, cr, uid, search_args, offset, limit, context={}):
         collaborator_id = search_args['collaborator_id']
-        state = ""
+        state = " and E.state in ('on_going', 'closed')"
         if search_args.get("state", False):
             state = "and E.state = '" + str(search_args['state']) + "'"
             
@@ -90,8 +90,18 @@ class kemas_event(osv.osv):
             OFFSET %d LIMIT %d
             """ % (collaborator_id, state, offset, limit)
         cr.execute(sql)
-        events = cr.fetchall()
-        return events
+        
+        result = []
+        for event in cr.fetchall():
+            sql = """
+                select collaborator_id from kemas_event_collaborator_line
+                where event_id = %d
+                """ % (event[0])
+            cr.execute(sql)
+            collaborator_ids = kemas_extras.convert_result_query_to_list(cr.fetchall())
+            event = list(event) + [collaborator_ids] 
+            result.append(event)
+        return result
 
     _inherit = 'kemas.event'
     
@@ -160,6 +170,18 @@ class kemas_attendance(osv.osv):
     _inherit = 'kemas.attendance' 
 
 class kemas_collaborator(osv.osv):
+    def get_collaborator_event(self, cr, uid, collaborator_id, context={}):
+        sql = """
+            SELECT P.name, C.photo_small FROM kemas_collaborator as C
+            JOIN res_users AS U ON (U.id = C.user_id)
+            JOIN res_partner AS P ON (P.id = U.partner_id)
+            WHERE C.id = %d
+            """ % collaborator_id
+        cr.execute(sql)
+        collaborator = cr.dictfetchall()[0]
+        collaborator['photo_small'] = unicode(collaborator['photo_small'])
+        return collaborator
+        
     def get_collaborator(self, cr, uid, collaborator_id, context={}):
         def build_image(image):
             result = ''
