@@ -56,12 +56,11 @@ class kemas_config(osv.osv):
     _inherit = 'kemas.config' 
     
 class kemas_event(osv.osv): 
-    def get_count_events_to_mobilapp(self, cr, uid, search_args, context={}):
-        collaborator_id = search_args['collaborator_id']
+    def get_count_events_to_mobilapp(self, cr, uid, params, context={}):
+        collaborator_id = params['collaborator_id']
         state = " and E.state in ('on_going', 'closed')"
-        if search_args.get("state", False):
-            state = "and E.state = '" + str(search_args['state']) + "'"
-            
+        if params.get("state", False):
+            state = "and E.state = '" + str(params['state']) + "'"
         sql = """
             SELECT count(E.id) FROM kemas_event as E
             JOIN kemas_service as S on (S.id = E.service_id)
