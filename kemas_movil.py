@@ -75,6 +75,7 @@ class kemas_event(osv.osv):
     def get_events_to_mobilapp(self, cr, uid, params, context={}):
         offset = params.get('offset', 0)
         limit = params.get('limit', 10)
+        order = params.get('order', 'E.date_start DESC, E.id DESC')
         limit_avatars = params.get('limit_avatars', 3)
         
         collaborator_id = params['collaborator_id']
@@ -89,9 +90,9 @@ class kemas_event(osv.osv):
                 select event_id from kemas_event_collaborator_line
                 where collaborator_id = %d %s
             )
-            ORDER BY E.date_start DESC, E.id DESC
+            ORDER BY %s
             OFFSET %d LIMIT %d
-            """ % (collaborator_id, state, offset, limit)
+            """ % (collaborator_id, state, offset, limit, order)
         cr.execute(sql)
         
         result = []
