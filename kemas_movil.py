@@ -92,7 +92,7 @@ class kemas_event(osv.osv):
             )
             ORDER BY %s
             OFFSET %d LIMIT %d
-            """ % (collaborator_id, state, offset, limit, order)
+            """ % (collaborator_id, state, order, offset, limit)
         cr.execute(sql)
         
         result = []
