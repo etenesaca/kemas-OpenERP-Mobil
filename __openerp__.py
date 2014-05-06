@@ -20,7 +20,7 @@
 #
 ##############################################################################
 {
-    'name': u'Inferfaz para Conexión Móbil - Kemas',
+    'name': u'Inferfaz para Conexión desde dispositivos moviles',
     'description': """provee una interfaz para que un cliente movil para que pueda conectarse al OpenERP kemas.""",
     'version':'1.0',
     'author': 'EdgarSoft',
@@ -31,7 +31,7 @@
     'category':'Accounting & Finance',
     'init_xml': [],
     'update_xml': [
-        'kemas_movil_view.xml',
+        'kemas_mobile_view.xml',
         ],
     'installable': True,
     'application': True,
