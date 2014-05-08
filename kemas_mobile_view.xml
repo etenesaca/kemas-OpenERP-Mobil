@@ -11,7 +11,7 @@
          <field name="model">kemas.config</field>
          <field name="inherit_id" ref="kemas.kemas_config_form_view" />
          <field name="arch" type="xml">
-            <xpath expr="/form/notebook/page[@string='Cliente de registro de Asistencia']" position="after">
+            <xpath expr="/form/notebook/page[@id='attendance_records']" position="after">
                <page string="Cliente móvil">
                   <group>
                      <field name="mobile_background_text_color" />
