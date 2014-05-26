@@ -161,7 +161,7 @@ class kemas_attendance(osv.osv):
         
         sql = """
             SELECT count(A.id) FROM kemas_attendance as A
-            WHERE A.collaborator_id = %d %s
+            WHERE A.register_type = 'checkin' and A.collaborator_id = %d %s
             """ % (collaborator_id, attendances)
         cr.execute(sql)
         return cr.fetchall()[0][0]
@@ -171,17 +171,32 @@ class kemas_attendance(osv.osv):
         attendances = ""
         if search_args.get("type", False):
             attendances = "and A.type = '" + str(search_args['type']) + "'"
-        
         sql = """
-            SELECT A.id, S.name, A.type, A.date FROM kemas_attendance as A
+            SELECT A.id, S.name, A.type, A.date, A.checkout_id FROM kemas_attendance as A
             JOIN kemas_event as E ON (E.id = A.event_id)
             JOIN kemas_service as S ON (S.id = E.service_id)
-            WHERE A.collaborator_id = %d %s
+            WHERE A.register_type = 'checkin' and A.collaborator_id = %d %s
             ORDER BY A.date DESC, A.id DESC
             OFFSET %d LIMIT %d
             """ % (collaborator_id, attendances, offset, limit)
         cr.execute(sql)
-        return cr.fetchall()
+        
+        result = [] 
+        for record in cr.fetchall(): 
+            checkout = False
+            record = list(record)
+            if not record[4] is None:
+                record = list(record)
+                sql = """
+                    SELECT A.date FROM kemas_attendance as A
+                    where A.id = %d
+                    """ % record[4]
+                cr.execute(sql)
+                checkout = cr.fetchall()[0][0]
+            record[4] = checkout
+            result.append(record)
+                
+        return result
 
     _inherit = 'kemas.attendance' 
 
